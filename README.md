@@ -154,7 +154,7 @@ What's built so far, and what's next:
 
 - [x] `backend/server.js` — dummy backend with `/health` and `/toggle-health`, per-request logging
 - [x] Docker setup — run three backends at once, reachable by name
-- [ ] `custom-lb/lb.js` — the hand-rolled load balancer (round-robin, least-connections, active health checks)
+- [x] `custom-lb/lb.js` — the hand-rolled load balancer (round-robin, least-connections, active health checks)
 - [ ] `nginx/nginx.conf` — the nginx equivalent
 - [ ] `haproxy/haproxy.cfg` — the HAProxy equivalent, with stats dashboard
 
