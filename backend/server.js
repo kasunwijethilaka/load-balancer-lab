@@ -9,6 +9,7 @@ const send = (res, status, body) => {
 };
 
 const server = http.createServer((req, res) => {
+  console.log(`[${NAME}] ${req.method} ${req.url}`);
   if (req.url === "/toggle-health") {
     healthy = !healthy;
     send(res, 200, `healthy: ${healthy}\n`);
