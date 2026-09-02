@@ -1,10 +1,15 @@
 const http = require("http");
 
-const backends = [
-  { host: "localhost", port: 3001, healthy: true, connections: 0 },
-  { host: "localhost", port: 3002, healthy: true, connections: 0 },
-  { host: "localhost", port: 3003, healthy: true, connections: 0 },
-];
+const parseBackends = (str) =>
+  str.split(",").map((pair) => {
+    const [host, port] = pair.split(":");
+    return { host, port: Number(port), healthy: true, connections: 0 };
+  });
+
+const BACKENDS =
+  process.env.BACKENDS || "localhost:3001,localhost:3002,localhost:3003";
+
+const backends = parseBackends(BACKENDS);
 
 let rrIndex = 0;
 

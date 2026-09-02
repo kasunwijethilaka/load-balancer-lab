@@ -19,3 +19,15 @@ services:
       - BACKEND_NAME=backend3
     ports:
       - "3003:3000"
+
+  custom-lb:
+    build: ./custom-lb
+    environment:
+      - BACKENDS=backend1:3000,backend2:3000,backend3:3000
+      - ALGORITHM=round-robin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
