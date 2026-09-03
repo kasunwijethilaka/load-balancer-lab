@@ -137,6 +137,43 @@ Run it again to bring the backend back to healthy.
 
 ---
 
+## Comparing the load balancers
+
+Both load balancers run at once, in front of the same three backends, so you can hit either
+front door and compare:
+
+| Load balancer | URL | Active health checks? |
+|---|---|---|
+| `custom-lb` (hand-rolled) | http://localhost:8080 | ✅ yes — polls `/health` every 3s |
+| `nginx` (open-source) | http://localhost:8081 | ❌ no — passive only |
+
+The backends are also directly reachable at `localhost:3001`–`3003` (handy for toggling
+their health in experiments).
+
+**See active vs. passive health checks — the core lesson:**
+
+```bash
+# Tell backend2 to report unhealthy on /health (its / route still returns 200)
+curl localhost:3002/toggle-health
+
+# custom-lb polls /health, so it drops backend2 within ~3s:
+for i in $(seq 6); do curl -s localhost:8080; done   # only backend1 & backend3
+
+# open-source nginx never polls /health — it keeps sending traffic to backend2:
+for i in $(seq 6); do curl -s localhost:8081; done   # still all three
+
+curl localhost:3002/toggle-health                    # restore backend2
+```
+
+`custom-lb` (like HAProxy and NGINX Plus) **actively** probes each backend's `/health`, so it
+drops a backend that *reports itself* sick even while it still serves normal traffic.
+Open-source nginx only does **passive** checks — it reacts *after* real requests actually fail
+— so it keeps routing to a backend that hasn't started failing real traffic yet. (If you
+truly stop a backend with `docker compose stop backend2`, nginx's passive check *does* catch
+it, after a failed request or two.) That gap is the whole point of the comparison.
+
+---
+
 ## Load balancing algorithms
 
 The `custom-lb` implements these as pure functions, selected via the `ALGORITHM` env var:
@@ -155,7 +192,7 @@ What's built so far, and what's next:
 - [x] `backend/server.js` — dummy backend with `/health` and `/toggle-health`, per-request logging
 - [x] Docker setup — run three backends at once, reachable by name
 - [x] `custom-lb/lb.js` — the hand-rolled load balancer (round-robin, least-connections, active health checks)
-- [ ] `nginx/nginx.conf` — the nginx equivalent
+- [x] `nginx/nginx.conf` — the nginx equivalent (round-robin via `upstream` + `proxy_pass`; passive health checks only)
 - [ ] `haproxy/haproxy.cfg` — the HAProxy equivalent, with stats dashboard
 
 ---
