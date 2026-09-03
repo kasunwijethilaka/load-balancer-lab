@@ -31,3 +31,14 @@ services:
       - backend1
       - backend2
       - backend3
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
