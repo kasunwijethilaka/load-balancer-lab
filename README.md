@@ -112,8 +112,8 @@ docker-compose.yml  # Wires up the 3 backends + the load balancers
 
 ## Getting started
 
-> **Status:** this lab is being built incrementally (see [Roadmap](#roadmap) below). Not all
-> of the commands here work yet — they describe the intended setup.
+The whole stack — three backends fronted by all three load balancers — comes up with one
+command:
 
 Start everything:
 
@@ -139,13 +139,17 @@ Run it again to bring the backend back to healthy.
 
 ## Comparing the load balancers
 
-Both load balancers run at once, in front of the same three backends, so you can hit either
+All three load balancers run at once, in front of the same three backends, so you can hit any
 front door and compare:
 
 | Load balancer | URL | Active health checks? |
 |---|---|---|
 | `custom-lb` (hand-rolled) | http://localhost:8080 | ✅ yes — polls `/health` every 3s |
 | `nginx` (open-source) | http://localhost:8081 | ❌ no — passive only |
+| `haproxy` | http://localhost:8082 | ✅ yes — free |
+
+HAProxy also serves a **live stats dashboard** at http://localhost:8404 — open it in a browser
+and watch backends flip UP/DOWN (green/red) in real time as you toggle their health.
 
 The backends are also directly reachable at `localhost:3001`–`3003` (handy for toggling
 their health in experiments).
@@ -161,6 +165,9 @@ for i in $(seq 6); do curl -s localhost:8080; done   # only backend1 & backend3
 
 # open-source nginx never polls /health — it keeps sending traffic to backend2:
 for i in $(seq 6); do curl -s localhost:8081; done   # still all three
+
+# haproxy also polls /health (active, free) — it drops backend2 too:
+for i in $(seq 6); do curl -s localhost:8082; done   # only backend1 & backend3
 
 curl localhost:3002/toggle-health                    # restore backend2
 ```
@@ -193,7 +200,7 @@ What's built so far, and what's next:
 - [x] Docker setup — run three backends at once, reachable by name
 - [x] `custom-lb/lb.js` — the hand-rolled load balancer (round-robin, least-connections, active health checks)
 - [x] `nginx/nginx.conf` — the nginx equivalent (round-robin via `upstream` + `proxy_pass`; passive health checks only)
-- [ ] `haproxy/haproxy.cfg` — the HAProxy equivalent, with stats dashboard
+- [x] `haproxy/haproxy.cfg` — the HAProxy equivalent (active health checks + live stats dashboard on :8404)
 
 ---
 

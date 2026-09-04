@@ -42,3 +42,15 @@ services:
       - backend1
       - backend2
       - backend3
+
+  haproxy:
+    image: haproxy:alpine
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "8082:80"
+      - "8404:8404"
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
